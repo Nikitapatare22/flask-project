@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+      - name: flask-container
+        # Replace with the correct image name
+        image: us-central1-docker.pkg.dev/nikita1-441604/flask-app-repo/flask-app:latest
+        imagePullPolicy: Always  # Ensures the latest image is pulled
+        ports:
+        - containerPort: 5000
