@@ -1,56 +1,37 @@
 pipeline {
     agent any
-    tools {
-        git 'Default'  // This should correspond to the Git installation name from Global Tool Configuration
-    }
-    environment {
-        DOCKER_IMAGE = "nikitapatare/flask-app:latest"
-        DOCKER_REGISTRY_CREDENTIALS = 'dockerhub-credentials'  // Replace with your Jenkins credential ID
-    }
     stages {
         stage('Clone Repository') {
             steps {
-                echo 'Cloning repository...'
+                // Cloning the main branch of the repository
                 git branch: 'main', url: 'https://github.com/Nikitapatare22/flask-project'
             }
-        }
-        // Your other stages...
-    }
-}
-
         }
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker Image...'
-                script {
-                    def dockerHome = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
-                    env.PATH = "${dockerHome}/bin:${env.PATH}"
-                }
-                sh '''
-                    docker build -t ${DOCKER_IMAGE} .
-                '''
+                sh 'docker build -t flask-app:latest .'
             }
         }
         stage('Push Docker Image') {
             steps {
-                echo 'Pushing Docker Image to DockerHub...'
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${DOCKER_IMAGE}
-                    '''
+                echo 'Pushing Docker Image...'
+                withCredentials([string(credentialsId: 'docker-hub-credentials', variable: 'DOCKER_HUB_TOKEN')]) {
+                    sh """
+                    echo \$DOCKER_HUB_TOKEN | docker login -u your-docker-username --password-stdin
+                    docker tag flask-app:latest your-docker-username/flask-app:latest
+                    docker push your-docker-username/flask-app:latest
+                    """
                 }
             }
         }
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes...'
-                script {
-                    sh '''
-                        kubectl apply -f k8s/deployment.yaml
-                        kubectl apply -f k8s/service.yaml
-                    '''
-                }
+                sh """
+                kubectl apply -f k8s-deployment.yaml
+                kubectl apply -f k8s-service.yaml
+                """
             }
         }
     }
