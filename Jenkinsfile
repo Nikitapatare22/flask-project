@@ -4,7 +4,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 echo 'Cloning the repository...'
-                withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: 'Token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh """
                     git config --global url.https://\$GITHUB_USERNAME:\$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
                     git clone -b main https://github.com/Nikitapatare22/flask-project.git
@@ -32,22 +32,12 @@ pipeline {
         }
         stage('Deploy to Kubernetes') {
             steps {
-                echo 'Configuring GCP Service Account...'
+                echo 'Deploying to Kubernetes...'
                 withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_CREDENTIALS')]) {
                     sh """
                     gcloud auth activate-service-account --key-file=\$GCP_CREDENTIALS
                     kubectl apply -f k8s-deployment.yaml
                     kubectl apply -f k8s-service.yaml
-                    """
-                }
-            }
-        }
-        stage('Setup SSH Connection') {
-            steps {
-                echo 'Setting up SSH connection...'
-                withCredentials([sshUserPrivateKey(credentialsId: 'slave', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                    sh """
-                    ssh -i \$SSH_KEY \$SSH_USER@remote-server 'echo SSH Connection Established'
                     """
                 }
             }
