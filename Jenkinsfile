@@ -1,8 +1,11 @@
 pipeline {
     agent any
+    tools {
+        git 'Default'  // This should correspond to the Git installation name from Global Tool Configuration
+    }
     environment {
         DOCKER_IMAGE = "nikitapatare/flask-app:latest"
-        DOCKER_REGISTRY_CREDENTIALS = 'dockerhub-credentials' // Replace with your Jenkins credential ID
+        DOCKER_REGISTRY_CREDENTIALS = 'dockerhub-credentials'  // Replace with your Jenkins credential ID
     }
     stages {
         stage('Clone Repository') {
@@ -10,6 +13,11 @@ pipeline {
                 echo 'Cloning repository...'
                 git branch: 'main', url: 'https://github.com/Nikitapatare22/flask-project'
             }
+        }
+        // Your other stages...
+    }
+}
+
         }
         stage('Build Docker Image') {
             steps {
