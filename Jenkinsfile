@@ -10,14 +10,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker Image...'
-                sh 'docker build -t flask-app:latest .'
+                bat 'docker build -t flask-app:latest .'
             }
         }
         stage('Push Docker Image') {
             steps {
                 echo 'Pushing Docker Image...'
                 withCredentials([string(credentialsId: 'docker-hub-credentials', variable: 'DOCKER_HUB_TOKEN')]) {
-                    sh """
+                    bat """
                     echo \$DOCKER_HUB_TOKEN | docker login -u your-docker-username --password-stdin
                     docker tag flask-app:latest your-docker-username/flask-app:latest
                     docker push your-docker-username/flask-app:latest
@@ -28,7 +28,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes...'
-                sh """
+                bat """
                 kubectl apply -f k8s-deployment.yaml
                 kubectl apply -f k8s-service.yaml
                 """
